@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id'); // Blogger's user id
-            $table->enum('type', ['news', 'book', 'normal']);
+            $table->enum('type', ['news', 'book', 'cours']);
             $table->string('caption');
-            $table->string('image'); // Image path
+            $table->string('image')->nullable();
             $table->string('pdf')->nullable(); // PDF path (for book posts)
             $table->timestamps();
         });

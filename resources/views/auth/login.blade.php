@@ -14,4 +14,14 @@
         
         <button type="submit">Login</button>
     </form>
+
+    <div style="margin-top: 1rem;">
+        <p>
+            Don't have an account? 
+            <a href="{{ route('register') }}">Register here</a>
+        </p>
+        <p>
+            <a href="{{ route('password.request') }}">Forgot your password?</a>
+        </p>
+    </div>
 @endsection

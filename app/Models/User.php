@@ -18,11 +18,12 @@ class User extends Authenticatable
         'role',
         'phone',      // Add phone
         'bio',        // Add bio
-        'profile_image',        // Add img
+        'profile_image', // Good
         'address',    // Add address
     ];
     protected $hidden = [
-        'password', 'remember_token',
+        'password',
+        'remember_token',
     ];
 
     protected $casts = [

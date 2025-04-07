@@ -18,7 +18,7 @@ class PostFactory extends Factory
             'caption' => $this->faker->sentence(), // Generate random caption
             'image' => $this->faker->imageUrl(640, 480, 'posts'), // Generate random image URL
             'pdf' => $this->faker->randomElement([null, $this->faker->filePath()]), // Generate random PDF or null
-            'type' => $this->faker->randomElement(['news', 'book', 'normal']), // Randomly choose post type
+            'type' => $this->faker->randomElement(['news', 'book', 'cours']),
         ];
     }
 }

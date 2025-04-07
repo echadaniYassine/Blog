@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Post;
 use App\Models\Like;
+use App\Models\Post;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log; // Import the Log facade
 
 class PostController extends Controller
 {
@@ -16,11 +16,20 @@ class PostController extends Controller
      */
     public function home()
     {
-        return view('pages.home', [
-            'news' => Post::where('type', 'news')->latest()->take(5)->get(),
-            'books' => Post::where('type', 'book')->latest()->take(5)->get(),
-            'normalPosts' => Post::where('type', 'normal')->latest()->take(5)->get(),
-        ]);
+        // You can optionally cache each section to improve performance
+        $news = Cache::remember('news_posts', 60, function () {
+            return Post::with('user')->where('type', 'news')->latest()->take(3)->get();
+        });
+
+        $books = Cache::remember('book_posts', 60, function () {
+            return Post::with('user')->where('type', 'book')->latest()->take(3)->get();
+        });
+
+        $coursPosts = Cache::remember('cours', 60, function () {
+            return Post::with('user')->where('type', 'cours')->latest()->take(3)->get();
+        });
+
+        return view('pages.home', compact('news', 'books', 'coursPosts'));
     }
 
     /**
@@ -28,7 +37,7 @@ class PostController extends Controller
      */
     public function index(Request $request)
     {
-        $type = $request->input('type', 'normal'); // default to 'normal'
+        $type = $request->input('type', 'cours'); // default to 'cours'
         $posts = Post::where('type', $type)->latest()->get();
 
         return view('posts.index', compact('posts'));
@@ -55,32 +64,60 @@ class PostController extends Controller
     /**
      * Store a new post
      */
+
     public function store(Request $request)
     {
-        $request->validate([
-            'caption' => 'required|string|max:255', // Assuming caption is required
-            'type' => 'required|in:news,book,normal',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'pdf' => 'nullable|mimes:pdf|max:10240',
-        ]);
+        // Validate the incoming request data
+        $rules = [
+            'caption' => 'required|string|max:255',
+            'type' => 'required|in:news,book,cours',
+            'images' => 'nullable|array', // Images should be an array
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Validate each image
+        ];
 
+        // Add PDF validation only for book type
+        if ($request->type == 'book') {
+            $rules['pdf'] = 'required|mimes:pdf|max:10240';
+        }
+
+        $request->validate($rules);
+
+        // Create a new post object
         $post = new Post();
         $post->user_id = auth()->id();
         $post->type = $request->type;
         $post->caption = $request->caption;
 
-        // Handle file uploads
-        if ($request->hasFile('image')) {
-            $post->image = $request->file('image')->store('posts', 'public');
+        // Handle image upload (multiple images for news posts)
+        if ($request->hasFile('images')) {
+            $images = [];
+            foreach ($request->file('images') as $image) {
+                // Store each image and keep their paths in an array
+                $images[] = $image->store('posts', 'public');
+            }
+            // Store the images array as JSON in the database
+            $post->images = json_encode($images);
         }
 
-        if ($request->hasFile('pdf') && $post->type == 'book') {
+        // Handle PDF upload for book posts
+        if ($request->hasFile('pdf') && $request->type == 'book') {
             $post->pdf = $request->file('pdf')->store('books', 'public');
         }
 
+        // Log for debugging
+        Log::info('Creating post with data:', [
+            'type' => $post->type,
+            'caption' => $post->caption,
+            'images' => $post->images ?? 'No images',
+            'pdf' => $post->pdf ?? 'No PDF'
+        ]);
+
+        // Save the post to the database
         $post->save();
 
-        return redirect()->route('posts.index')->with('message', 'Post created successfully.');
+        // Redirect back with a success message
+        return
+            redirect()->route('home')->with('message', 'Post created successfully.');
     }
 
     /**
@@ -103,7 +140,7 @@ class PostController extends Controller
     {
         $request->validate([
             'caption' => 'required|string|max:255', // Assuming caption is required
-            'type' => 'required|in:normal,news,book',
+            'type' => 'required|in:news,book,cours',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'pdf' => 'nullable|mimes:pdf|max:10000',  // For book posts
         ]);

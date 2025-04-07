@@ -27,14 +27,13 @@
 
                 <!-- Display profile image if exists -->
                 <div class="text-center mb-4">
-                    @if (auth()->user()->img)
-                        <img src="{{ asset('storage/' . auth()->user()->img) }}" alt="Profile Image" class="rounded-circle"
-                            width="100" height="100">
+                    @if (auth()->user()->profile_image)
+                        <img src="{{ asset('storage/' . auth()->user()->profile_image) }}" alt="Profile Image"
+                            class="rounded-circle" width="100" height="100">
                     @else
                         <img src="https://via.placeholder.com/100" alt="Default Image" class="rounded-circle" width="100"
                             height="100">
                     @endif
-
 
                 </div>
 
@@ -83,8 +82,8 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="img" class="form-label">Profile Image (Optional)</label>
-                        <input type="file" id="img" name="img" class="form-control">
+                        <label for="profile_image" class="form-label">Profile Image (Optional)</label>
+                        <input type="file" id="profile_image" name="profile_image" class="form-control">
                     </div>
 
                     <button type="submit" class="btn btn-primary">Update Profile</button>

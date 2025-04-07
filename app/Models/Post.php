@@ -10,12 +10,19 @@ class Post extends Model
     use HasFactory;
 
     protected $fillable = ['user_id', 'type', 'image', 'caption', 'pdf'];
+    
 
     // Relationships
     public function user()
     {
         return $this->belongsTo(User::class);
     }
+    // In Post.php model
+    public function images()
+    {
+        return $this->hasMany(Image::class);
+    }
+
 
     public function likes()
     {
