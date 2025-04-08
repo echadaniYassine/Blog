@@ -71,9 +71,15 @@ class PostController extends Controller
         $rules = [
             'caption' => 'required|string|max:255',
             'type' => 'required|in:news,book,cours',
-            'images' => 'nullable|array', // Images should be an array
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Validate each image
         ];
+
+        // Add type-specific validation rules
+        if ($request->type == 'news') {
+            $rules['images'] = 'required|array';
+            $rules['images.*'] = 'image|mimes:jpeg,png,jpg,gif,svg|max:2048';
+        } else { // For book and cours types
+            $rules['image'] = 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048';
+        }
 
         // Add PDF validation only for book type
         if ($request->type == 'book') {
@@ -88,15 +94,21 @@ class PostController extends Controller
         $post->type = $request->type;
         $post->caption = $request->caption;
 
-        // Handle image upload (multiple images for news posts)
-        if ($request->hasFile('images')) {
-            $images = [];
-            foreach ($request->file('images') as $image) {
-                // Store each image and keep their paths in an array
-                $images[] = $image->store('posts', 'public');
+        // Handle image upload based on post type
+        if ($request->type == 'news') {
+            // For news posts: store multiple images as JSON
+            if ($request->hasFile('images')) {
+                $images = [];
+                foreach ($request->file('images') as $image) {
+                    $images[] = $image->store('posts', 'public');
+                }
+                $post->images = json_encode($images);
             }
-            // Store the images array as JSON in the database
-            $post->images = json_encode($images);
+        } else {
+            // For book and course posts: store single image
+            if ($request->hasFile('image')) {
+                $post->image = $request->file('image')->store('posts', 'public');
+            }
         }
 
         // Handle PDF upload for book posts
@@ -104,20 +116,11 @@ class PostController extends Controller
             $post->pdf = $request->file('pdf')->store('books', 'public');
         }
 
-        // Log for debugging
-        Log::info('Creating post with data:', [
-            'type' => $post->type,
-            'caption' => $post->caption,
-            'images' => $post->images ?? 'No images',
-            'pdf' => $post->pdf ?? 'No PDF'
-        ]);
-
         // Save the post to the database
         $post->save();
 
         // Redirect back with a success message
-        return
-            redirect()->route('home')->with('message', 'Post created successfully.');
+        return redirect()->route('home')->with('message', 'Post created successfully.');
     }
 
     /**

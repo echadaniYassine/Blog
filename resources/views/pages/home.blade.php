@@ -13,38 +13,38 @@
                         <div class="card">
                             <div class="card-header d-flex align-items-center">
                                 <img src="{{ asset('storage/' . $post->user->profile_image) }}" loading="lazy"
-                                     alt="Profile Image" class="rounded-circle"
-                                     style="width: 40px; height: 40px; position: absolute; top: 10px; left: 10px;">
+                                    alt="Profile Image" class="rounded-circle"
+                                    style="width: 40px; height: 40px; position: absolute; top: 10px; left: 10px;">
                                 <div class="pl-5">
                                     <h5 class="mb-0">{{ $post->user->name }}</h5>
                                 </div>
                             </div>
 
-                            <!-- Carousel for Images -->
+                            <!-- Carousel for News Images -->
                             @if (is_array($post->images) && count($post->images) > 0)
                                 <div id="carousel-{{ $post->id }}" class="carousel slide" data-bs-ride="carousel">
                                     <div class="carousel-inner">
                                         @foreach ($post->images as $index => $image)
                                             <div class="carousel-item {{ $index == 0 ? 'active' : '' }}">
-                                                <img src="{{ asset('storage/' . $image['image_path']) }}"
-                                                     class="d-block w-100" alt="Post Image" loading="lazy">
+                                                <img src="{{ asset('storage/' . $image) }}" class="d-block w-100"
+                                                    alt="Post Image" loading="lazy">
                                             </div>
                                         @endforeach
                                     </div>
                                     <button class="carousel-control-prev" type="button"
-                                            data-bs-target="#carousel-{{ $post->id }}" data-bs-slide="prev">
+                                        data-bs-target="#carousel-{{ $post->id }}" data-bs-slide="prev">
                                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                                         <span class="visually-hidden">Previous</span>
                                     </button>
                                     <button class="carousel-control-next" type="button"
-                                            data-bs-target="#carousel-{{ $post->id }}" data-bs-slide="next">
+                                        data-bs-target="#carousel-{{ $post->id }}" data-bs-slide="next">
                                         <span class="carousel-control-next-icon" aria-hidden="true"></span>
                                         <span class="visually-hidden">Next</span>
                                     </button>
                                 </div>
                             @else
-                                <img src="{{ asset('storage/' . $post->getImageUrlAttribute()) }}" class="card-img-top"
-                                     alt="Post Image" loading="lazy">
+                                <img src="{{ $post->getImageUrlAttribute() }}" class="card-img-top" alt="Post Image"
+                                    loading="lazy">
                             @endif
 
                             <div class="card-body">
@@ -68,15 +68,15 @@
                     <a href="{{ route('posts.show', $post->id) }}" class="card-link">
                         <div class="card">
                             <div class="card-header d-flex align-items-center">
-                                <img src="{{ asset('storage/' . $post->user->profile_image) }}" loading="lazy"
-                                     alt="Profile Image" class="rounded-circle"
-                                     style="width: 40px; height: 40px; position: absolute; top: 10px; left: 10px;">
+                                <img src="{{ asset('storage/' . ($post->user->profile_image ?? 'default-profile.png')) }}"
+                                    loading="lazy" alt="Profile Image" class="rounded-circle"
+                                    style="width: 40px; height: 40px; position: absolute; top: 10px; left: 10px;">
                                 <div class="pl-5">
                                     <h5 class="mb-0">{{ $post->user->name }}</h5>
                                 </div>
                             </div>
-                            <img src="{{ $post->getImageUrlAttribute() }}" loading="lazy" class="card-img-top"
-                                 alt="Post Image">
+                            <!-- Display single image for books -->
+                            <img src="{{ $post->getImageUrlAttribute() }}" loading="lazy" class="card-img-top" alt="Post Image">
                             <div class="card-body">
                                 <h5 class="card-title">{{ $post->caption }}</h5>
                             </div>
@@ -99,14 +99,15 @@
                         <div class="card">
                             <div class="card-header d-flex align-items-center" style="position: relative;">
                                 <img src="{{ asset('storage/' . $post->user->profile_image) }}" alt="Profile Image"
-                                     class="rounded-circle"
-                                     style="width: 40px; height: 40px; position: absolute; top: 10px; left: 10px;">
+                                    class="rounded-circle"
+                                    style="width: 40px; height: 40px; position: absolute; top: 10px; left: 10px;">
                                 <div class="pl-5" style="margin-left: 50px;">
                                     <h5 class="mb-0">{{ $post->user->name }}</h5>
                                 </div>
                             </div>
+                            <!-- Display single image for courses -->
                             <img src="{{ $post->getImageUrlAttribute() }}" loading="lazy" class="card-img-top"
-                                 alt="Post Image">
+                                alt="Post Image">
                             <div class="card-body">
                                 <h5 class="card-title">{{ $post->caption }}</h5>
                             </div>

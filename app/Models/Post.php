@@ -9,20 +9,13 @@ class Post extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'type', 'image', 'caption', 'pdf'];
-    
+    protected $fillable = ['user_id', 'type', 'image', 'caption', 'pdf', 'images'];
 
     // Relationships
     public function user()
     {
         return $this->belongsTo(User::class);
     }
-    // In Post.php model
-    public function images()
-    {
-        return $this->hasMany(Image::class);
-    }
-
 
     public function likes()
     {
@@ -42,12 +35,24 @@ class Post extends Model
     // Image upload path
     public function getImageUrlAttribute()
     {
-        return $this->image ? asset('storage/' . $this->image) : null;
+        // If it's a news post with multiple images, return the first one
+        if ($this->type == 'news' && $this->images && is_array($this->images) && count($this->images) > 0) {
+            return asset('storage/' . $this->images[0]);
+        }
+
+        // For book and course posts with a single image
+        return $this->image ? asset('storage/' . $this->image) : asset('images/placeholder.jpg');
     }
 
     // PDF upload path
     public function getPdfUrlAttribute()
     {
         return $this->pdf ? asset('storage/' . $this->pdf) : null;
+    }
+
+    // Decode images from JSON
+    public function getImagesAttribute($value)
+    {
+        return json_decode($value, true);
     }
 }

@@ -31,7 +31,7 @@
                 @else
                     <li class="nav-item d-flex align-items-center">
                         <a class="nav-link d-flex align-items-center gap-2"
-                            href="{{ route('user.profile', auth()->id()) }}">
+                            href="{{ route('profile.show', auth()->id()) }}">
                             <!-- Profile Image -->
                             @if (auth()->user()->profile_image)
                                 <img src="{{ asset('storage/' . auth()->user()->profile_image) }}" alt="Profile Image"

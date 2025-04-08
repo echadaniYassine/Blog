@@ -27,14 +27,23 @@
             @enderror
         </div>
 
-        <div class="form-group">
-            <label for="images">Images</label>
+        <!-- News post - multiple images -->
+        <div class="form-group" id="images-field">
+            <label for="images">Images (Multiple for News)</label>
             <input type="file" name="images[]" class="form-control" id="images" multiple>
             @error('images.*')
                 <span class="text-danger">{{ $message }}</span>
             @enderror
         </div>
 
+        <!-- Book/Course post - single image -->
+        <div class="form-group" id="image-field" style="display: none;">
+            <label for="image">Image (Single)</label>
+            <input type="file" name="image" class="form-control" id="image">
+            @error('image')
+                <span class="text-danger">{{ $message }}</span>
+            @enderror
+        </div>
 
         <div class="form-group" id="pdf-field" style="display: none;">
             <label for="pdf">PDF</label>
@@ -51,12 +60,27 @@
         document.getElementById('type').addEventListener('change', function() {
             const type = this.value;
             const pdfField = document.getElementById('pdf-field');
+            const imagesField = document.getElementById('images-field');
+            const imageField = document.getElementById('image-field');
 
             // Show PDF field only for book posts
             if (type === 'book') {
                 pdfField.style.display = 'block';
-            } else {
+                imageField.style.display = 'block';
+                imagesField.style.display = 'none';
+            } else if (type === 'cours') {
                 pdfField.style.display = 'none';
+                imageField.style.display = 'block';
+                imagesField.style.display = 'none';
+            } else if (type === 'news') {
+                pdfField.style.display = 'none';
+                imageField.style.display = 'none';
+                imagesField.style.display = 'block';
+            } else {
+                // Default state
+                pdfField.style.display = 'none';
+                imageField.style.display = 'none';
+                imagesField.style.display = 'none';
             }
         });
 

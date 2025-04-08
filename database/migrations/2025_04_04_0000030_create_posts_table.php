@@ -16,7 +16,8 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id'); // Blogger's user id
             $table->enum('type', ['news', 'book', 'cours']);
             $table->string('caption');
-            $table->string('image')->nullable();
+            $table->string('image')->nullable(); // Single image for books and courses
+            $table->json('images')->nullable(); // JSON for multiple images (for news)
             $table->string('pdf')->nullable(); // PDF path (for book posts)
             $table->timestamps();
         });

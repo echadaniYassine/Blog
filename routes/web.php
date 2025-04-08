@@ -56,9 +56,13 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
-    Route::get('/profile/{id}', [UserController::class, 'show'])->name('user.profile');
-    Route::put('/profile/{id}', [UserController::class, 'update']);
+    Route::get('/profile/{id}', [UserController::class, 'profile'])->name('user.profile');
+    Route::put('/profile/{id}', [UserController::class, 'update'])->name('profile.update');
+    Route::get('/profile/{id}', [UserController::class, 'show'])->name('profile.show');
+    Route::get('/profile/{id}/edit', [UserController::class, 'edit'])->name('profile.edit')->middleware('auth');
+    // Logout route
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
 
     // Post CRUD
     Route::get('/create', [PostController::class, 'createPostBlog'])->name('posts.createPostBlog');
