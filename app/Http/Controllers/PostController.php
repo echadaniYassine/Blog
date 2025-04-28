@@ -12,10 +12,24 @@ class PostController extends Controller
 {
     public function home()
     {
-        $news = Cache::remember('news_posts', 5, fn() => Post::with('user')->where('type', 'news')->latest()->take(3)->get());
-        $books = Cache::remember('book_posts', 5, fn() => Post::with('user')->where('type', 'book')->latest()->take(3)->get());
-        $coursPosts = Cache::remember('cours', 5, fn() => Post::with('user')->where('type', 'cours')->latest()->take(3)->get());
-
+        $news = Cache::remember(
+            'news_posts',
+            5,
+            fn() =>
+            Post::with(['user', 'images'])->where('type', 'news')->latest()->take(3)->get()
+        );
+        $books = Cache::remember(
+            'book_posts',
+            5,
+            fn() =>
+            Post::with(['user', 'images'])->where('type', 'book')->latest()->take(3)->get()
+        );
+        $coursPosts = Cache::remember(
+            'cours',
+            5,
+            fn() =>
+            Post::with(['user', 'images'])->where('type', 'cours')->latest()->take(3)->get()
+        );
 
         return view('pages.home', compact('news', 'books', 'coursPosts'));
     }
@@ -37,6 +51,16 @@ class PostController extends Controller
     public function createPostBlog()
     {
         return view('posts.createPostBlog');
+    }
+
+
+    public function edit(Post $post)
+    {
+        if (auth()->id() !== $post->user_id && auth()->user()->role !== 'admin') {
+            abort(403, 'Unauthorized');
+        }
+
+        return view('posts.edit', compact('post'));
     }
 
     public function store(Request $request)
@@ -83,22 +107,11 @@ class PostController extends Controller
             $pdfPath = $request->file('pdf')->store('books', 'public');
             $post->pdf()->create(['path' => $pdfPath]);
         }
-        // Clear the cache for the respective post types
-        Cache::forget('news_posts');
-        Cache::forget('book_posts');
-        Cache::forget('cours');
+
+        // Only clear the specific cache that was affected
+        Cache::forget($request->type . '_posts');
 
         return redirect()->route('home')->with('message', 'Post created successfully.');
-    }
-
-
-    public function edit(Post $post)
-    {
-        if (auth()->id() !== $post->user_id && auth()->user()->role !== 'admin') {
-            abort(403, 'Unauthorized');
-        }
-
-        return view('posts.edit', compact('post'));
     }
 
     public function update(Request $request, Post $post)
@@ -110,16 +123,20 @@ class PostController extends Controller
             'pdf' => 'nullable|mimes:pdf|max:10000',
         ]);
 
+        // Store the original type to check if it changed
+        $originalType = $post->type;
+
         $post->update([
             'type' => $request->type,
             'caption' => $request->caption,
         ]);
 
         if ($request->hasFile('image')) {
-            // Delete old image if it exists
+            // Only delete images if a new one is being uploaded
             $post->images->each(fn($image) => Storage::delete('public/' . $image->path));
-            // Store new image
-            $imagePath = $request->file('image')->store('post_images', 'public');
+
+            // Use consistent storage path
+            $imagePath = $request->file('image')->store('posts', 'public');
             $post->images()->create(['path' => $imagePath]);
         }
 
@@ -129,17 +146,18 @@ class PostController extends Controller
                 Storage::delete('public/' . $post->pdf->path);
             }
             // Store new PDF
-            $pdfPath = $request->file('pdf')->store('post_pdfs', 'public');
+            $pdfPath = $request->file('pdf')->store('books', 'public');
             $post->pdf()->updateOrCreate([], ['path' => $pdfPath]);
         }
-        // Clear the cache for the respective post types
-        Cache::forget('news_posts');
-        Cache::forget('book_posts');
-        Cache::forget('cours');
+
+        // Clear caches more specifically
+        if ($originalType !== $post->type) {
+            Cache::forget($originalType . '_posts'); // Clear old type cache
+        }
+        Cache::forget($post->type . '_posts'); // Clear new type cache
 
         return redirect()->route('posts.index')->with('message', 'Post updated successfully.');
     }
-
 
     public function destroy(Post $post)
     {

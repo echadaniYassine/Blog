@@ -21,7 +21,7 @@
                             </div>
 
                             <!-- Carousel for News Images -->
-                            @if (is_array($post->images) && count($post->images) > 0)
+                            @if ($post->images->count() > 0)
                                 <div id="carousel-{{ $post->id }}" class="carousel slide" data-bs-ride="carousel">
                                     <div class="carousel-inner">
                                         @foreach ($post->images as $index => $image)
