@@ -35,12 +35,22 @@ class Post extends Model
     // Image upload path
     public function getImageUrlAttribute()
     {
+        // Vérifier si $this->images est déjà un tableau
+        if (is_array($this->images)) {
+            // Si c'est un tableau, vous pouvez directement utiliser la logique
+            return count($this->images) > 0 ? asset('storage/' . $this->images[0]) : asset('images/default-post.jpg');
+        }
+    
+        // Si $this->images est une chaîne JSON, on peut la décoder
         if ($this->images) {
             $images = json_decode($this->images, true);
             return count($images) > 0 ? asset('storage/' . $images[0]) : asset('images/default-post.jpg');
         }
-        return $this->image ? asset('storage/' . $this->image) : asset('images/default-post.jpg');
+    
+        // Si aucune image n'est définie, retourner l'image par défaut
+        return asset('images/default-post.jpg');
     }
+    
 
     // PDF upload path
     public function getPdfUrlAttribute()
