@@ -20,6 +20,7 @@ return new class extends Migration
             $table->text('bio')->nullable();
             $table->string('profile_image')->nullable(); // Correct column name
             $table->text('address')->nullable();
+            $table->string('pdf')->nullable(); // Add PDF field for bloggers
             $table->string('password');
             $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();

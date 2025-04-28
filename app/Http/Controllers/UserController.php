@@ -22,17 +22,23 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         return view('users.profile', compact('user'));
     }
+
+
     public function show($id)
     {
-        $user = User::findOrFail($id);
+        $user = User::with(['posts'])->findOrFail($id);
+
         return view('users.profile', compact('user'));
     }
+
+
+
     public function index()
     {
         $members = User::where('role', 'blogger')->get(); // only bloggers
         return view('members.index', compact('members'));
     }
-  
+
 
     // Edit profile
     public function edit($id)
@@ -51,33 +57,41 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
-    
-        // Check if the authenticated user is trying to update their own profile or is an admin
+
         if (Auth::id() !== $user->id && Auth::user()->role !== 'admin') {
             return redirect()->route('profile.show', $id)->with('error', 'You are not authorized to update this profile.');
         }
-    
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . $user->id,
             'bio' => 'nullable|string|max:1000',
             'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'pdf' => 'nullable|mimes:pdf|max:2048',  // Add validation for PDF
         ]);
-    
+
         $user->name = $validated['name'];
         $user->email = $validated['email'];
         $user->bio = $validated['bio'];
-    
+
         if ($request->hasFile('profile_image')) {
             if ($user->profile_image) {
                 Storage::disk('public')->delete($user->profile_image);
             }
-    
+
             $user->profile_image = $request->file('profile_image')->store('profile_images', 'public');
         }
-    
+
+        if ($request->hasFile('pdf')) {
+            if ($user->pdf) {
+                Storage::disk('public')->delete($user->pdf);
+            }
+
+            $user->pdf = $request->file('pdf')->store('pdfs', 'public');  // Store PDF file
+        }
+
         $user->save();
-    
+
         return redirect()->route('profile.show', $user->id)->with('success', 'Profile updated successfully!');
     }
 }

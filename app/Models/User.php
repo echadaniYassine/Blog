@@ -20,6 +20,8 @@ class User extends Authenticatable
         'bio',        // Add bio
         'profile_image', // Good
         'address',    // Add address
+        'pdf', // Add pdf to fillable
+
     ];
     protected $hidden = [
         'password',
@@ -49,4 +51,5 @@ class User extends Authenticatable
     {
         return $this->hasMany(Share::class);
     }
+   
 }

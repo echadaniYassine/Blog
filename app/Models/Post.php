@@ -4,12 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Post extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
-    protected $fillable = ['user_id', 'type', 'image', 'caption', 'pdf', 'images'];
+    protected $fillable = [
+        'user_id', 'type', 'caption'
+    ];
 
     // Relationships
     public function user()
@@ -32,27 +35,31 @@ class Post extends Model
         return $this->hasMany(Share::class);
     }
 
-    // Image upload path
+    public function images()
+    {
+        return $this->hasMany(Image::class);
+    }
+
+    public function pdf()
+    {
+        return $this->hasOne(Pdf::class);
+    }
+
+    // Accessor for primary image
     public function getImageUrlAttribute()
     {
-        // If it's a news post with multiple images, return the first one
-        if ($this->type == 'news' && $this->images && is_array($this->images) && count($this->images) > 0) {
-            return asset('storage/' . $this->images[0]);
-        }
-
-        // For book and course posts with a single image
-        return $this->image ? asset('storage/' . $this->image) : asset('images/placeholder.jpg');
+        return $this->images()->first() ? asset('storage/' . $this->images()->first()->path) : asset('images/placeholder.jpg');
     }
 
-    // PDF upload path
+    // Accessor for all image URLs
+    public function getImagesUrlsAttribute()
+    {
+        return $this->images->map(fn($image) => asset('storage/' . $image->path))->toArray();
+    }
+
+    // Accessor for PDF URL
     public function getPdfUrlAttribute()
     {
-        return $this->pdf ? asset('storage/' . $this->pdf) : null;
-    }
-
-    // Decode images from JSON
-    public function getImagesAttribute($value)
-    {
-        return json_decode($value, true);
+        return $this->pdf ? asset('storage/' . $this->pdf->path) : null;
     }
 }

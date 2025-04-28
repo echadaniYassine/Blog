@@ -67,6 +67,11 @@
                         <input type="file" id="profile_image" name="profile_image" class="form-control">
                     </div>
 
+                    <div class="form-group">
+                        <label for="pdf">Upload PDF (optional)</label>
+                        <input type="file" class="form-control" name="pdf" accept="application/pdf">
+                    </div>
+
                     <button type="submit" class="btn btn-primary">Save Changes</button>
                     <a href="{{ route('profile.show', $user->id) }}" class="btn btn-secondary">Cancel</a>
                 </form>
